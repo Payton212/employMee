@@ -1,8 +1,8 @@
 // importing classes from other files
 import inquirer from "inquirer";
-import department from "./departments.js";
-import role from "./roles.js";
-import employee from "./employees.js";
+import department from "./classes/departments.js";
+import role from "./classes/roles.js";
+import employee from "./classes/employees.js";
 
 class Cli {
     constructor() { }

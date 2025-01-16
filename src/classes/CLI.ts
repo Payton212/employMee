@@ -1,20 +1,28 @@
 // importing classes from other files
 import inquirer from "inquirer";
-import department from "./classes/departments.js";
-import role from "./classes/roles.js";
-import employee from "./classes/employees.js";
+import { QueryResult } from "pg";
+import department from "../interfaces/departments.js";
+import role from "../interfaces/roles.js";
+import employee from "../interfaces/employees.js";
+//import * as fs from "fs";
 
+
+  
 class Cli {
-    constructor() { }
     
+constructor() { 
+   
+}
+  
     originChoice(): void{
         inquirer.prompt([
             {
                 type: "list",
                 name: "firstAction",
                 message: "what would you like to do?",
-                choices: ["View All Employees","Add Employees", "View All Roles", "Add Role", "View All Departments", "Add Department", "Quit"],
-            },
+                choices: ["View All Employees", "Add Employees", "View All Roles", "Add Role", "View All Departments",
+                    "Add Department", "Quit"],
+            },  
         ])
             .then((answers) => {
                 if (answers.firstAction === "View All Employees") {
@@ -50,7 +58,17 @@ class Cli {
         throw new Error("Method not implemented.");
     }
     AddDepartment() {
-        throw new Error("Method not implemented.");
+        inquirer.prompt([
+            {
+                type: "input",
+                name: "addDepartment",
+                message: "what is the name of the department?",
+            },
+        ]).then((answers) => {
+           
+            
+            this.originChoice();
+        })
     }
     Quit() {
         throw new Error("Method not implemented.");

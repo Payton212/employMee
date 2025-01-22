@@ -36,8 +36,28 @@ function originChoice() {
                     value: "ADD_DEPARTMENT",
                 },
                 {
-                    name: "Update Employee",
-                    value: "UPDATE_EMPLOYEE",
+                    name: "Update Employee Role",
+                    value: "UPDATE_EMPLOYEE_ROLE",
+                },
+                {
+                    name: "Update Employee Manager",
+                    value: "UPDATE_EMPLOYEE_MANAGER",
+                },
+                {
+                    name: "View Employees by manager",
+                    value: "VIEW_EMPLOYEES_BY_MANAGER"
+                },
+                {
+                    name: "View employees by department",
+                    value: "VIEW_EMPLOYEES_BY_DEPARTMENT",
+                },
+                {
+                    name: "Delete Department",
+                    value: "DELETE_DEPARTMENT",
+                },
+                {
+                    name: "total Salary of all employees",
+                    value: "TOTAL_SALARY",
                 },
                 {
                     name: "Quit",
@@ -67,8 +87,23 @@ function originChoice() {
             case "ADD_DEPARTMENT":
                 AddDepartment();
                 break;
-            case "UPDATE_EMPLOYEE":
-                updateEmployee();
+            case "UPDATE_EMPLOYEE_ROLE":
+                updateEmployeeRole();
+                break;
+            case "UPDATE_EMPLOYEE_MANAGER":
+                updateEmployeeManager();
+                break;
+            case "VIEW_EMPLOYEES_BY_MANAGER":
+                viewEmployeesByManager();
+                break;
+            case "VIEW_EMPLOYEES_BY_DEPARTMENT":
+                ViewEmployeesByDepartment();
+                break;
+            case "DELETE_DEPARTMENT":
+                deleteDepartment();
+                break;
+            case "TOTAL_SALARY":
+                totalSalary();
                 break;
             case "QUIT":
                 Quit();
@@ -126,21 +161,28 @@ function AddEmployee() {
                     const employees = response?.rows;
                     const managerChoices = employees?.map((employee) => {
                         const id = employee.id;
+                        const managerId = employee.manager;
                         const firstName = employee.first_name;
                         const lastName = employee.last_name;
                         return {
                             name: `${firstName} ${lastName}`,
                             value: id,
+                            manager: managerId,
                         };
                     });
-                    managerChoices?.unshift({ name: "none", value: null });
+                    const filteredEmployees = managerChoices?.filter((choice) => choice.manager.trim() === "");
+                    filteredEmployees?.unshift({
+                        name: "none",
+                        value: null,
+                        manager: " ",
+                    });
                     inquirer
                         .prompt([
                         {
                             type: "list",
                             name: "ManagerList",
                             message: "whos is this employees manager?",
-                            choices: managerChoices,
+                            choices: filteredEmployees,
                         },
                     ])
                         .then((res) => {
@@ -159,15 +201,16 @@ function AddEmployee() {
                 });
             });
         });
-    })
-        .then(() => originChoice());
+    });
 }
 function ViewRoles() {
     // THEN I am presented with the job title, role id, the department that role belongs to, and the salary for that role
-    db.findAllRoles().then((response) => {
+    db.findAllRoles()
+        .then((response) => {
         const roles = response?.rows;
         console.table(roles);
-    }).then(() => originChoice());
+    })
+        .then(() => originChoice());
 }
 function AddRole() {
     // THEN I am prompted to enter the name, salary, and department for the  role and that role is added to the database
@@ -194,32 +237,38 @@ function AddRole() {
                 const name = department.name;
                 return { name: name, value: id };
             });
-            inquirer.prompt([
+            inquirer
+                .prompt([
                 {
                     type: "list",
                     name: "departmentChoice",
                     message: "please select a department for this role",
-                    choices: departmentChoices
+                    choices: departmentChoices,
                 },
-            ]).then((response) => {
+            ])
+                .then((response) => {
                 const role = {
                     role_title: roleName,
                     role_salary: salary,
                     department_id: response.departmentChoice,
                 };
                 db.addRole(role);
-            }).then(() => {
+            })
+                .then(() => {
                 console.log(`${roleName} has been added to the database!`);
-            }).then(() => originChoice());
+            })
+                .then(() => originChoice());
         });
     });
 }
 function ViewDepartments() {
     // THEN I am presented with a formatted table showing department names and department ids
-    db.findAllDepartments().then((res) => {
+    db.findAllDepartments()
+        .then((res) => {
         const department = res?.rows;
         console.table(department);
-    }).then(() => originChoice());
+    })
+        .then(() => originChoice());
 }
 function AddDepartment() {
     // THEN I am prompted to enter the name of the department and that department is added to the database
@@ -233,12 +282,14 @@ function AddDepartment() {
     ])
         .then((response) => {
         const departmentName = response.addDepartment;
-        db.addDepartment(departmentName).then(() => {
+        db.addDepartment(departmentName)
+            .then(() => {
             console.log(`${departmentName} has been added to the database`);
-        }).then(() => originChoice());
+        })
+            .then(() => originChoice());
     });
 }
-function updateEmployee() {
+function updateEmployeeRole() {
     db.findAllEmployees().then((res) => {
         const employees = res?.rows;
         const employeeChoice = employees?.map((employee) => {
@@ -250,14 +301,16 @@ function updateEmployee() {
                 value: id,
             };
         });
-        inquirer.prompt([
+        inquirer
+            .prompt([
             {
                 type: "list",
                 name: "employees",
-                message: "what employee would you like to Update?",
+                message: "what employee's role would you like to Update?",
                 choices: employeeChoice,
             },
-        ]).then((res) => {
+        ])
+            .then((res) => {
             const employee = res.employees;
             db.findAllRoles().then((res) => {
                 const roles = res?.rows;
@@ -284,10 +337,107 @@ function updateEmployee() {
                 })
                     .then(() => {
                     console.log(`employee role has been updated`);
-                }).then(() => originChoice());
+                })
+                    .then(() => originChoice());
             });
         });
     });
+}
+function updateEmployeeManager() {
+    db.findAllEmployees().then((res) => {
+        const employees = res?.rows;
+        const employeeChoice = employees?.map((employee) => {
+            const first_name = employee.first_name;
+            const last_name = employee.last_name;
+            const id = employee.id;
+            return {
+                name: `${first_name} ${last_name}`,
+                value: id,
+            };
+        });
+        inquirer
+            .prompt([
+            {
+                type: "list",
+                name: "employees",
+                message: "who's manager would you like to update?",
+                choices: employeeChoice,
+            },
+        ])
+            .then((response) => {
+            const employee = response.employees;
+            const managerChoices = employees?.map((employee) => {
+                const id = employee.id;
+                const managerId = employee.manager;
+                const firstName = employee.first_name;
+                const lastName = employee.last_name;
+                return {
+                    name: `${firstName} ${lastName}`,
+                    value: id,
+                    manager: managerId,
+                };
+            });
+            const filteredEmployees = managerChoices?.filter((choice) => choice.manager.trim() === '');
+            filteredEmployees?.unshift({ name: "none", value: null, manager: " " });
+            inquirer
+                .prompt([
+                {
+                    type: "list",
+                    name: "ManagerChoice",
+                    message: "choose a new Manager",
+                    choices: filteredEmployees,
+                },
+            ])
+                .then((res) => {
+                const newManager = res.ManagerChoice;
+                db.chooseNewManager(newManager, employee).then(() => {
+                    console.log("new manager assigned");
+                });
+            })
+                .then(() => originChoice());
+        });
+    });
+}
+function viewEmployeesByManager() {
+    db.viewEmployeesByManager().then((res) => {
+        const employees = res?.rows;
+        console.table(employees);
+    }).then(() => originChoice());
+}
+function ViewEmployeesByDepartment() {
+    db.ViewEmployeesByDepartment().then((res) => {
+        const employees = res?.rows;
+        console.table(employees);
+    }).then(() => originChoice());
+}
+function deleteDepartment() {
+    db.findAllDepartments().then((res) => {
+        const departments = res?.rows;
+        const departmentChoices = departments?.map((department) => {
+            const name = department.name;
+            return { name: name, value: name };
+        });
+        inquirer.prompt([
+            {
+                type: "list",
+                name: "deleteDepartment",
+                message: "what department do you want to delete?",
+                choices: departmentChoices,
+            },
+        ]).then((response) => {
+            const deletedDepartment = response.deleteDepartment.trim();
+            console.log(deletedDepartment);
+            db.deleteDepartment(deletedDepartment).then(() => {
+                console.log(`${deletedDepartment} has been deleted!`);
+            }).then(() => originChoice());
+        });
+    });
+}
+function totalSalary() {
+    db.totalSalary().then((res) => {
+        const totalSalary = res?.rows;
+        console.table(totalSalary);
+    }).then(() => originChoice());
 }
 function Quit() {
     db.quit();

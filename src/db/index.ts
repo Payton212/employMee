@@ -1,7 +1,7 @@
 import { pool } from "./connection.js";
 
 export default class Db {
-    exit: boolean = false
+  exit: boolean = false;
   constructor() {}
 
   async query(sql: string, args: any[] = []) {
@@ -22,36 +22,65 @@ export default class Db {
       "SELECT employee.id, employee.first_name, employee.last_name, role.title, department.name AS department, role.salary, CONCAT(manager.first_name, '  ', manager.last_name) AS manager FROM employee LEFT JOIN role on employee.role_id = role.id LEFT JOIN department on role.department_id = department.id LEFT JOIN employee manager on manager.id = employee.manager_id;";
     return this.query(sql);
   }
+  viewEmployeesByManager() {
+    // query taken from expert learner
+    const sql =
+      "SELECT employee.id AS Employee_ID, employee.first_name AS Employee_First_Name, employee.last_name AS Employee_Last_Name,manager.id AS Manager_ID, manager.first_name AS Manager_First_Name, manager.last_name AS Manager_Last_Name FROM employee LEFT JOIN employee AS manager ON employee.manager_id = manager.id ORDER BY manager.last_name, employee.last_name ";
+    return this.query(sql);
+  }
+  ViewEmployeesByDepartment() {
+    // query taken from expert learner
+    const sql =
+      "SELECT  employee.id, employee.first_name, employee.last_name, role.title, department.name FROM employee JOIN role ON employee.role_id = role.id JOIN department ON role.department_id = department.id ORDER BY department.name";
+    return this.query(sql);
+  }
 
   addNewEmployee(employee: any) {
-      const { first_name, last_name, role_id, manager_id } = employee;
-      const sql = "INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES ($1, $2, $3, $4)"
-      return this.query(sql, [first_name, last_name, role_id, manager_id]);
+    const { first_name, last_name, role_id, manager_id } = employee;
+    const sql =
+      "INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES ($1, $2, $3, $4)";
+    return this.query(sql, [first_name, last_name, role_id, manager_id]);
   }
-    updateEmployeeRole(update: any) {
-      const { name, role_id } = update
-        const sql = `UPDATE employee SET role_id = ${role_id} WHERE id = ${name}`;
-        this.query(sql);
-   }
-    findAllRoles() {
-      const sql =
-        "SELECT role.id, role.title, department.name AS department, role.salary FROM role LEFT JOIN department on role.department_id = department.id;";
+  updateEmployeeRole(update: any) {
+    const { name, role_id } = update;
+    const sql = `UPDATE employee SET role_id = ${role_id} WHERE id = ${name}`;
+    this.query(sql);
+  }
+  findAllRoles() {
+    const sql =
+      "SELECT role.id, role.title, department.name AS department, role.salary FROM role LEFT JOIN department on role.department_id = department.id;";
     return this.query(sql);
-    }
-    findAllDepartments() {
-        const sql = "SELECT * FROM department";
-        return this.query(sql);
-    }
-    addRole(role: any) {
-        const {role_title, role_salary, department_id } = role;
-        const sql = "INSERT INTO role (title, salary, department_id) VALUES ($1, $2, $3)";
-        return this.query(sql, [role_title, role_salary, department_id]);
-    }
-    addDepartment(department_name: any) {
-      const sql = "INSERT INTO department (name) VALUES ($1)";
-      return this.query(sql, [department_name]);
-    }
-    quit() {
-        this.exit = true;
-    }
+  }
+  findAllDepartments() {
+    const sql = "SELECT * FROM department";
+    return this.query(sql);
+  }
+  addRole(role: any) {
+    const { role_title, role_salary, department_id } = role;
+    const sql =
+      "INSERT INTO role (title, salary, department_id) VALUES ($1, $2, $3)";
+    return this.query(sql, [role_title, role_salary, department_id]);
+  }
+  addDepartment(department_name: any) {
+    const sql = "INSERT INTO department (name) VALUES ($1)";
+    return this.query(sql, [department_name]);
+  }
+  chooseNewManager(newManager: any, employee: any) {
+    const sql = `UPDATE employee SET manager_id = ${newManager} WHERE id = ${employee}`;
+    return this.query(sql);
+  }
+  deleteDepartment(deletedDepartment: any) {
+    // query taken from expert learner
+    const sql1 = `DELETE FROM employee WHERE role_id IN (SELECT id FROM role WHERE department_id = ( SELECT id FROM department WHERE name = '${deletedDepartment}') );
+    DELETE FROM role WHERE department_id = (SELECT id FROM department WHERE name = '${deletedDepartment}'); DELETE FROM department WHERE name = '${deletedDepartment}';`;
+    return this.query(sql1);
+  }
+  totalSalary() {
+    const sql = ""
+    return this.query(sql);
+  }
+
+  quit() {
+    this.exit = true;
+  }
 }

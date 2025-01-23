@@ -26,14 +26,14 @@ export default class Db {
         const sql = "SELECT employee.id, employee.first_name, employee.last_name, role.title, department.name AS department, role.salary, CONCAT(manager.first_name, '  ', manager.last_name) AS manager FROM employee LEFT JOIN role on employee.role_id = role.id LEFT JOIN department on role.department_id = department.id LEFT JOIN employee manager on manager.id = employee.manager_id;";
         return this.query(sql);
     }
-    viewEmployeesByManager() {
+    viewEmployeesByManager(manager) {
         // query taken from expert learner
-        const sql = "SELECT employee.id AS Employee_ID, employee.first_name AS Employee_First_Name, employee.last_name AS Employee_Last_Name,manager.id AS Manager_ID, manager.first_name AS Manager_First_Name, manager.last_name AS Manager_Last_Name FROM employee LEFT JOIN employee AS manager ON employee.manager_id = manager.id ORDER BY manager.last_name, employee.last_name ";
+        const sql = `SELECT * FROM employee WHERE manager_id = '${manager}'`;
         return this.query(sql);
     }
-    ViewEmployeesByDepartment() {
+    ViewEmployeesByDepartment(department) {
         // query taken from expert learner
-        const sql = "SELECT  employee.id, employee.first_name, employee.last_name, role.title, department.name FROM employee JOIN role ON employee.role_id = role.id JOIN department ON role.department_id = department.id ORDER BY department.name";
+        const sql = `SELECT employee.first_name, employee.last_name, role.title, department.name AS department_name, employee.manager_id FROM employee JOIN role ON employee.role_id = role.id JOIN department ON role.department_id = department.id WHERE department.name = '${department}' ORDER BY employee.last_name, employee.first_name;`;
         return this.query(sql);
     }
     addNewEmployee(employee) {
@@ -74,7 +74,7 @@ export default class Db {
         return this.query(sql1);
     }
     totalSalary() {
-        const sql = "";
+        const sql = "SELECT SUM(r.salary) AS total_salary FROM employee e JOIN role r ON e.role_id = r.id;";
         return this.query(sql);
     }
     quit() {

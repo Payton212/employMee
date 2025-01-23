@@ -3,7 +3,7 @@ import inquirer from "inquirer";
 import Db from "./db/index.js";
 
 const db = new Db();
-
+// originchoice base layout was taken from jay mascarenas on day 3 of sql 
 function originChoice(): void {
   // THEN I am presented with the following options: view all departments, view all roles, view all employees, add a department, add a role, add an employee,and update an employee role
   inquirer
@@ -114,7 +114,7 @@ function originChoice(): void {
           Quit();
       }
     });
-}
+}// viewAllEmployees function was taken from jay mascarenas on sql day 3
 function ViewAllEmployees() {
   db.findAllEmployees()
     .then((res) => {
@@ -123,6 +123,7 @@ function ViewAllEmployees() {
     })
     .then(() => originChoice());
 }
+// majority of the addEmployee function was taken from sql day 3 from teacher Jay mascarenas he gave full permission for us to implement his code!
 function AddEmployee() {
   // THEN I am prompted to enter the employee’s first name, last name, role, and manager, and that employee is added to the database
   inquirer
@@ -409,16 +410,59 @@ function updateEmployeeManager() {
   });
 }
 function viewEmployeesByManager() {
-  db.viewEmployeesByManager().then((res) => {
+  db.findAllEmployees().then((res) => {
     const employees = res?.rows;
-    console.table(employees);
-  }).then(() => originChoice());
+    const managerChoices = employees?.map((employee) => {
+      const id = employee.id;
+      const managerId = employee.manager;
+      const firstName = employee.first_name;
+      const lastName = employee.last_name;
+      return {
+        name: `${firstName} ${lastName}`,
+        value: id,
+        manager: managerId,
+      };
+    })
+    const managers = managerChoices?.filter(
+      (choice) => choice.manager.trim() === ''
+    );
+    inquirer.prompt([
+      {
+        type: "list",
+        name: "manager",
+        message: "what manager would you like to view?",
+        choices: managers,
+      },
+    ]).then((res) => {
+      db.viewEmployeesByManager(res.manager).then((response) => {
+        const table = response?.rows;
+        console.table(table);
+      }).then(() => originChoice());
+    })
+})
 }
 function ViewEmployeesByDepartment() {
-  db.ViewEmployeesByDepartment().then((res) => {
-    const employees = res?.rows;
-    console.table(employees);
-  }).then(() => originChoice());
+  db.findAllDepartments().then((res) => {
+    const departments = res?.rows;
+    const departmentChoices = departments?.map((department) => {
+      const name = department.name;
+      return { name: name, value: name };
+    })
+    inquirer.prompt([
+      {
+        type: "list",
+        name: "department",
+        message: "what department would you like to view employees by?",
+        choices: departmentChoices,
+      },
+    ]).then((res) => {
+      const department = res.department;
+      db.ViewEmployeesByDepartment(department).then((res) => {
+        const employees = res?.rows;
+        console.table(employees);
+      }).then(() => originChoice());
+    })
+})
 }
 function deleteDepartment() {
   db.findAllDepartments().then((res) => {
@@ -445,7 +489,6 @@ function deleteDepartment() {
 }
 function totalSalary(){
   db.totalSalary().then((res) => {
-    
     const totalSalary = res?.rows;
     console.table(totalSalary);
 }).then(() => originChoice());

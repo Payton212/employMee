@@ -399,16 +399,57 @@ function updateEmployeeManager() {
     });
 }
 function viewEmployeesByManager() {
-    db.viewEmployeesByManager().then((res) => {
+    db.findAllEmployees().then((res) => {
         const employees = res?.rows;
-        console.table(employees);
-    }).then(() => originChoice());
+        const managerChoices = employees?.map((employee) => {
+            const id = employee.id;
+            const managerId = employee.manager;
+            const firstName = employee.first_name;
+            const lastName = employee.last_name;
+            return {
+                name: `${firstName} ${lastName}`,
+                value: id,
+                manager: managerId,
+            };
+        });
+        const managers = managerChoices?.filter((choice) => choice.manager.trim() === '');
+        inquirer.prompt([
+            {
+                type: "list",
+                name: "manager",
+                message: "what manager would you like to view?",
+                choices: managers,
+            },
+        ]).then((res) => {
+            db.viewEmployeesByManager(res.manager).then((response) => {
+                const table = response?.rows;
+                console.table(table);
+            }).then(() => originChoice());
+        });
+    });
 }
 function ViewEmployeesByDepartment() {
-    db.ViewEmployeesByDepartment().then((res) => {
-        const employees = res?.rows;
-        console.table(employees);
-    }).then(() => originChoice());
+    db.findAllDepartments().then((res) => {
+        const departments = res?.rows;
+        const departmentChoices = departments?.map((department) => {
+            const name = department.name;
+            return { name: name, value: name };
+        });
+        inquirer.prompt([
+            {
+                type: "list",
+                name: "department",
+                message: "what department would you like to view employees by?",
+                choices: departmentChoices,
+            },
+        ]).then((res) => {
+            const department = res.department;
+            db.ViewEmployeesByDepartment(department).then((res) => {
+                const employees = res?.rows;
+                console.table(employees);
+            }).then(() => originChoice());
+        });
+    });
 }
 function deleteDepartment() {
     db.findAllDepartments().then((res) => {

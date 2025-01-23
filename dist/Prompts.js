@@ -2,6 +2,7 @@
 import inquirer from "inquirer";
 import Db from "./db/index.js";
 const db = new Db();
+// originchoice base layout was taken from jay mascarenas on day 3 of sql 
 function originChoice() {
     // THEN I am presented with the following options: view all departments, view all roles, view all employees, add a department, add a role, add an employee,and update an employee role
     inquirer
@@ -112,7 +113,7 @@ function originChoice() {
                 Quit();
         }
     });
-}
+} // viewAllEmployees function was taken from jay mascarenas on sql day 3
 function ViewAllEmployees() {
     db.findAllEmployees()
         .then((res) => {
@@ -121,6 +122,7 @@ function ViewAllEmployees() {
     })
         .then(() => originChoice());
 }
+// majority of the addEmployee function was taken from sql day 3 from teacher Jay mascarenas he gave full permission for us to implement his code!
 function AddEmployee() {
     // THEN I am prompted to enter the employee’s first name, last name, role, and manager, and that employee is added to the database
     inquirer
